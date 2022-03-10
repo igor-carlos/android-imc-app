@@ -2,7 +2,9 @@ package com.example.calculo_imc;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,20 +36,53 @@ public class MainActivity extends AppCompatActivity {
         textViewResult = findViewById(R.id.textViewResult);
     }
 
+    protected int getWeightValue() {
+        String strWeight = editTextNumberWeight.getText().toString();
+        if (strWeight.isEmpty()) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Entrada inválida")
+                    .setMessage("O valor do peso está errado, digite novamente !")
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+            editTextNumberWeight.requestFocus();
+            throw new IllegalArgumentException("weight can not be a empty string");
+        }
+        return Integer.parseInt(strWeight);
+    }
+
+    protected float getHeightValue() {
+        String strHeight = editTextNumberHeight.getText().toString();
+        if (strHeight.isEmpty()) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Entrada inválida")
+                    .setMessage("O valor da altura está errado, digite novamente !")
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+            editTextNumberHeight.requestFocus();
+            throw new IllegalArgumentException("height can not be a empty string");
+        }
+        return Float.parseFloat(strHeight);
+    }
+
     protected void bindFunctionalityToButtons() {
         buttonCalculate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                float imc = calculateIMC();
-                String result = findResultByIMC(imc);
-                showResult(result);
+                try {
+                    int weight = getWeightValue();
+                    float height = getHeightValue();
+                    float imc = calculateIMC(weight, height);
+                    String result = findResultByIMC(imc);
+                    showResult(result);
+                    clearEntries();
+                } catch (Exception e) {
+                    Log.e("[ERROR]:", e.toString());
+                }
             }
         });
     }
 
-    protected Float calculateIMC() {
-        int weight = Integer.parseInt(editTextNumberWeight.getText().toString());
-        float height = Float.parseFloat(editTextNumberHeight.getText().toString());
+    protected Float calculateIMC(int weight, float height) {
         float heightInMeters = height / 100;
         float imc = weight / (heightInMeters * heightInMeters);
         return imc;
@@ -83,5 +118,10 @@ public class MainActivity extends AppCompatActivity {
 
     protected void showResult(String result) {
         textViewResult.setText(result);
+    }
+
+    protected void clearEntries() {
+        editTextNumberWeight.setText("");
+        editTextNumberHeight.setText("");
     }
 }
